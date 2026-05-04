@@ -13,6 +13,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", required=True, type=Path, help="Path to the input image.")
     parser.add_argument("--output", required=True, type=Path, help="Path to the output .schematic file.")
     parser.add_argument("--config", required=True, type=Path, help="Path to the workflow JSON config.")
+    parser.add_argument("--schem-width", type=int, help="Override output schematic width.")
+    parser.add_argument("--schem-height", type=int, help="Override output schematic height.")
+    parser.add_argument("--schem-length", type=int, help="Override output schematic length.")
     return parser.parse_args()
 
 
@@ -26,6 +29,12 @@ def main() -> None:
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     config = WorkflowConfig.from_path(args.config)
+    if args.schem_width is not None:
+        config.build.target_width = args.schem_width
+    if args.schem_height is not None:
+        config.build.target_height = args.schem_height
+    if args.schem_length is not None:
+        config.build.target_length = args.schem_length
     pipeline = ImageToSchematicPipeline(config, hf_cache)
     artifacts = pipeline.run(args.input, args.output)
     print(
