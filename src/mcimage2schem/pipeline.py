@@ -327,6 +327,8 @@ class ImageToSchematicPipeline:
                 min_neighbors=self.config.build.enclosed_hole_min_neighbors,
             )
 
+        block_states = block_states[::-1, :, :].copy()
+
         volume = SchematicVolume(
             width=target_size[0],
             height=target_size[1],
