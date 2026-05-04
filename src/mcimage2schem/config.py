@@ -7,8 +7,8 @@ from pathlib import Path
 
 @dataclass(slots=True)
 class ImageConfig:
-    target_width: int = 128
-    target_height: int = 72
+    target_width: int = 256
+    target_height: int = 144
 
 
 @dataclass(slots=True)
@@ -53,6 +53,8 @@ class BuildConfig:
     far_distance_pivot: float = 0.6
     far_distance_boost: float = 0.9
     far_distance_power: float = 1.4
+    shell_enabled: bool = True
+    shell_edge_suppression: float = 0.7
     fill_column_gaps: bool = True
     max_column_gap: int = 3
     fill_enclosed_holes: bool = True

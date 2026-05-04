@@ -40,6 +40,8 @@
     "far_distance_pivot": 0.6,
     "far_distance_boost": 0.9,
     "far_distance_power": 1.4,
+    "shell_enabled": true,
+    "shell_edge_suppression": 0.7,
     "fill_column_gaps": true,
     "max_column_gap": 3,
     "fill_enclosed_holes": true,

@@ -253,3 +253,137 @@ def _majority_block(blocks: list[str]) -> str:
             best = counts[block]
             winner = block
     return winner
+
+
+def compute_depth_gradient_map(depth_map: np.ndarray, valid_mask: np.ndarray) -> np.ndarray:
+    depth_map = depth_map.astype(np.float32)
+    grad_x = np.zeros_like(depth_map, dtype=np.float32)
+    grad_y = np.zeros_like(depth_map, dtype=np.float32)
+    grad_x[:, 1:] = np.abs(depth_map[:, 1:] - depth_map[:, :-1])
+    grad_y[1:, :] = np.abs(depth_map[1:, :] - depth_map[:-1, :])
+    gradient = np.maximum(grad_x, grad_y)
+    gradient[~valid_mask] = 0.0
+    valid_values = gradient[valid_mask]
+    if valid_values.size == 0:
+        return gradient
+    scale = float(np.percentile(valid_values, 90))
+    if scale <= 1e-6:
+        return np.zeros_like(gradient, dtype=np.float32)
+    return np.clip(gradient / scale, 0.0, 1.0).astype(np.float32)
+
+
+def estimate_back_surface_coords(
+    voxel_coords: np.ndarray,
+    valid_mask: np.ndarray,
+    label_grid: np.ndarray,
+    depth_map: np.ndarray,
+    camera_local: np.ndarray,
+    edge_suppression: float = 0.7,
+) -> tuple[np.ndarray, np.ndarray]:
+    back_coords = np.rint(voxel_coords).astype(np.int32).copy()
+    thickness_map = np.zeros(depth_map.shape, dtype=np.float32)
+    gradient_map = compute_depth_gradient_map(depth_map, valid_mask)
+
+    for y in range(depth_map.shape[0]):
+        for x in range(depth_map.shape[1]):
+            if not valid_mask[y, x]:
+                continue
+            label = str(label_grid[y, x])
+            base_thickness = _label_base_thickness(label)
+            if base_thickness <= 0.0:
+                continue
+            gradient_penalty = max(0.0, 1.0 - float(edge_suppression) * float(gradient_map[y, x]))
+            thickness = max(1.0, base_thickness * gradient_penalty)
+            thickness_map[y, x] = thickness
+
+            normal = _estimate_local_normal(voxel_coords, valid_mask, label_grid, x, y)
+            front = voxel_coords[y, x].astype(np.float32)
+            view_dir = front - camera_local.astype(np.float32)
+            view_norm = float(np.linalg.norm(view_dir))
+            if view_norm > 1e-6:
+                view_dir = view_dir / view_norm
+            else:
+                view_dir = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+
+            if normal is None:
+                back_dir = view_dir
+            else:
+                if float(np.dot(normal, view_dir)) > 0.0:
+                    normal = -normal
+                back_dir = (-normal * 0.7) + (view_dir * 0.3)
+                back_norm = float(np.linalg.norm(back_dir))
+                if back_norm <= 1e-6:
+                    back_dir = view_dir
+                else:
+                    back_dir = back_dir / back_norm
+
+            back_point = front + back_dir * thickness
+            back_coords[y, x] = np.rint(back_point).astype(np.int32)
+
+    return back_coords, thickness_map
+
+
+def _label_base_thickness(label: str) -> float:
+    return {
+        "foliage": 3.0,
+        "foliage_dark": 4.0,
+        "foliage_light": 3.0,
+        "ground": 4.0,
+        "ground_grass": 4.0,
+        "ground_dirt": 4.5,
+        "path": 2.0,
+        "rock": 5.0,
+        "rock_dark": 4.0,
+        "cliff": 6.0,
+        "sand": 3.0,
+        "snow": 2.0,
+        "water": 1.5,
+        "water_deep": 2.0,
+        "water_shallow": 1.0,
+        "wood": 3.0,
+        "shadow": 2.0,
+    }.get(label, 3.0)
+
+
+def _estimate_local_normal(
+    voxel_coords: np.ndarray,
+    valid_mask: np.ndarray,
+    label_grid: np.ndarray,
+    x: int,
+    y: int,
+) -> np.ndarray | None:
+    dx = _neighbor_span(voxel_coords, valid_mask, label_grid, x, y, axis=1)
+    dy = _neighbor_span(voxel_coords, valid_mask, label_grid, x, y, axis=0)
+    if dx is None or dy is None:
+        return None
+    normal = np.cross(dx, dy).astype(np.float32)
+    norm = float(np.linalg.norm(normal))
+    if norm <= 1e-6:
+        return None
+    return normal / norm
+
+
+def _neighbor_span(
+    voxel_coords: np.ndarray,
+    valid_mask: np.ndarray,
+    label_grid: np.ndarray,
+    x: int,
+    y: int,
+    axis: int,
+) -> np.ndarray | None:
+    label = str(label_grid[y, x])
+    offsets = [(-1, 0), (1, 0)] if axis == 1 else [(0, -1), (0, 1)]
+    samples: list[np.ndarray] = []
+    for dx, dy in offsets:
+        nx = x + dx
+        ny = y + dy
+        if ny < 0 or ny >= voxel_coords.shape[0] or nx < 0 or nx >= voxel_coords.shape[1]:
+            continue
+        if not valid_mask[ny, nx] or str(label_grid[ny, nx]) != label:
+            continue
+        samples.append(voxel_coords[ny, nx].astype(np.float32))
+    if len(samples) == 2:
+        return samples[1] - samples[0]
+    if len(samples) == 1:
+        return samples[0] - voxel_coords[y, x].astype(np.float32)
+    return None

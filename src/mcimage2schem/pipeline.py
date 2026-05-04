@@ -19,6 +19,7 @@ from .voxelize import (
     ScaleFit,
     compute_forward_distance_map,
     compute_scale_fit,
+    estimate_back_surface_coords,
     fill_column_gaps,
     fill_enclosed_holes,
     paint_line,
@@ -86,7 +87,7 @@ class ImageToSchematicPipeline:
         rgb_grid = np.zeros((*depth.shape, 3), dtype=np.uint8)
         for y_image, row in enumerate(label_map):
             for x, (label, avg_rgb) in enumerate(row):
-                if label == "sky":
+                if label in {"sky", "cloud"}:
                     continue
                 valid_mask[y_image, x] = True
                 label_grid[y_image, x] = label
@@ -149,6 +150,8 @@ class ImageToSchematicPipeline:
                 anchor_span_x_world=float(max(local_valid_points[:, 0].max() - local_valid_points[:, 0].min(), 1e-6)),
             )
             voxel_grid = local_points.astype(np.int32)
+            voxel_float_grid = local_points.astype(np.float32)
+            camera_local = -local_min.astype(np.float32)
         else:
             target_size = configured_target_size
             block_states = np.full(
@@ -166,8 +169,29 @@ class ImageToSchematicPipeline:
                 anchor_span_x_world=front_span_x,
             )
             scaled_points = scale_points_to_voxel_coords(points_world.astype(np.float32), scale_fit)
+            voxel_float_grid = scaled_points.astype(np.float32)
             voxel_grid = quantize_voxel_coords(scaled_points, target_size)
+            camera_local = np.array(
+                [
+                    -scale_fit.anchor_min_x_world * scale_fit.scale_x,
+                    -scale_fit.min_corner_world[1] * scale_fit.scale_y,
+                    -scale_fit.min_corner_world[2] * scale_fit.scale_z,
+                ],
+                dtype=np.float32,
+            )
         height_2d, width_2d = depth.shape
+        if self.config.build.shell_enabled:
+            back_surface_grid, _ = estimate_back_surface_coords(
+                voxel_coords=voxel_float_grid,
+                valid_mask=valid_mask,
+                label_grid=label_grid,
+                depth_map=depth.astype(np.float32),
+                camera_local=camera_local,
+                edge_suppression=self.config.build.shell_edge_suppression,
+            )
+            back_surface_grid = np.clip(back_surface_grid, 0, np.asarray(target_size, dtype=np.int32) - 1)
+        else:
+            back_surface_grid = voxel_grid
 
         for y_image in range(height_2d):
             for x in range(width_2d):
@@ -199,6 +223,16 @@ class ImageToSchematicPipeline:
                 else:
                     px, py, pz = coord
                     block_states[px, py, pz:target_size[2]] = block
+
+                if self.config.build.shell_enabled:
+                    back_coord = tuple(int(v) for v in back_surface_grid[y_image, x].tolist())
+                    paint_line(
+                        block_states,
+                        coord,
+                        back_coord,
+                        block,
+                        radius=self.config.build.point_radius,
+                    )
 
                 if not self.config.build.connect_neighbors:
                     continue
