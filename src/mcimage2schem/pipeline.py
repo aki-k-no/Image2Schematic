@@ -80,16 +80,15 @@ class ImageToSchematicPipeline:
         valid_points: list[np.ndarray] = []
         valid_mask = np.zeros(depth.shape, dtype=bool)
         block_grid = np.full(depth.shape, self.config.build.background_block, dtype=object)
+        label_grid = np.full(depth.shape, "", dtype=object)
+        rgb_grid = np.zeros((*depth.shape, 3), dtype=np.uint8)
         for y_image, row in enumerate(label_map):
             for x, (label, avg_rgb) in enumerate(row):
                 if label == "sky":
                     continue
                 valid_mask[y_image, x] = True
-                block_grid[y_image, x] = self.block_selector.choose(
-                    label=label,
-                    rgb=avg_rgb,
-                    default_block=self.config.build.default_block,
-                )
+                label_grid[y_image, x] = label
+                rgb_grid[y_image, x] = np.asarray(avg_rgb, dtype=np.uint8)
 
         forward_distance_map, forward_distance_fit = compute_forward_distance_map(
             principal_point_x=camera.principal_point_x,
@@ -167,6 +166,23 @@ class ImageToSchematicPipeline:
             scaled_points = scale_points_to_voxel_coords(points_world.astype(np.float32), scale_fit)
             voxel_grid = quantize_voxel_coords(scaled_points, target_size)
         height_2d, width_2d = depth.shape
+
+        for y_image in range(height_2d):
+            for x in range(width_2d):
+                if not valid_mask[y_image, x]:
+                    continue
+                coord = voxel_grid[y_image, x]
+                block_grid[y_image, x] = self.block_selector.choose(
+                    label=str(label_grid[y_image, x]),
+                    rgb=tuple(int(v) for v in rgb_grid[y_image, x].tolist()),
+                    default_block=self.config.build.default_block,
+                    image_x=x,
+                    image_y=y_image,
+                    voxel_x=int(coord[0]),
+                    voxel_y=int(coord[1]),
+                    voxel_z=int(coord[2]),
+                    depth_value=float(depth[y_image, x]),
+                )
 
         for y_image in range(height_2d):
             for x in range(width_2d):
