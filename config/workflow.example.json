@@ -1,0 +1,53 @@
+{
+  "image": {
+    "target_width": 128,
+    "target_height": 72
+  },
+  "depth": {
+    "model_id": "depth-anything/Depth-Anything-V2-Small-hf",
+    "device": "auto",
+    "invert": true,
+    "gamma": 1.0,
+    "max_depth_layers": 48
+  },
+  "segmentation": {
+    "model_id": "facebook/sam-vit-base",
+    "device": "auto",
+    "points_per_batch": 64,
+    "points_per_side": 16,
+    "pred_iou_thresh": 0.88,
+    "stability_score_thresh": 0.95,
+    "min_mask_region_area": 128,
+    "max_masks": 24
+  },
+  "build": {
+    "placement_mode": "direct_valid_points",
+    "fill_mode": "surface",
+    "background_block": "minecraft:air",
+    "default_block": "minecraft:stone",
+    "y_scale": 1,
+    "target_width": 128,
+    "target_height": 72,
+    "target_length": 48,
+    "point_radius": 0,
+    "connect_neighbors": true,
+    "max_connection_gap": 8,
+    "max_surface_depth_gap": 2,
+    "fill_triangles": true,
+    "near_width_fill_ratio": 0.92,
+    "near_depth_percentile": 0.98,
+    "forward_distance_scale": 1.5,
+    "far_distance_pivot": 0.6,
+    "far_distance_boost": 0.9,
+    "far_distance_power": 1.4
+  },
+  "classification": {
+    "water_depth_threshold": 0.52,
+    "sky_brightness_threshold": 0.65,
+    "vegetation_hue_min": 60,
+    "vegetation_hue_max": 170,
+    "sky_top_portion": 0.45,
+    "water_bottom_portion": 0.7,
+    "dark_shadow_threshold": 0.2
+  }
+}

@@ -1,0 +1,12 @@
+numpy>=1.26
+Pillow>=10.0
+torch>=2.2
+torchvision>=0.17
+transformers>=4.46
+accelerate>=0.33
+huggingface-hub>=0.24
+safetensors>=0.4
+scipy>=1.13
+tqdm>=4.66
+matplotlib>=3.8
+geocalib @ git+https://github.com/cvg/GeoCalib#egg=geocalib

@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+*.schem
+*.schematic
+inputs/
+outputs/
+.hf-cache/
