@@ -191,3 +191,65 @@ def paint_triangle(
             w = 1.0 - u - v
             point = np.rint(a_arr * w + b_arr * u + c_arr * v).astype(np.int32)
             paint_voxel(block_states, (int(point[0]), int(point[1]), int(point[2])), block, radius=radius)
+
+
+def fill_column_gaps(
+    block_states: np.ndarray,
+    background_block: str,
+    max_gap: int = 3,
+) -> None:
+    width, height, _ = block_states.shape
+    for x in range(width):
+        for y in range(height):
+            occupied = np.flatnonzero(block_states[x, y] != background_block)
+            if occupied.size < 2:
+                continue
+            for start, end in zip(occupied[:-1], occupied[1:]):
+                gap = int(end - start - 1)
+                if gap <= 0 or gap > max_gap:
+                    continue
+                left_block = str(block_states[x, y, int(start)])
+                right_block = str(block_states[x, y, int(end)])
+                fill_block = left_block if left_block == right_block else left_block
+                block_states[x, y, int(start) + 1 : int(end)] = fill_block
+
+
+def fill_enclosed_holes(
+    block_states: np.ndarray,
+    background_block: str,
+    iterations: int = 1,
+    min_neighbors: int = 4,
+) -> None:
+    neighbors = ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))
+    width, height, length = block_states.shape
+    for _ in range(max(iterations, 0)):
+        updates: list[tuple[int, int, int, str]] = []
+        for x in range(1, width - 1):
+            for y in range(1, height - 1):
+                for z in range(1, length - 1):
+                    if block_states[x, y, z] != background_block:
+                        continue
+                    adjacent: list[str] = []
+                    for dx, dy, dz in neighbors:
+                        block = str(block_states[x + dx, y + dy, z + dz])
+                        if block != background_block:
+                            adjacent.append(block)
+                    if len(adjacent) < min_neighbors:
+                        continue
+                    updates.append((x, y, z, _majority_block(adjacent)))
+        if not updates:
+            break
+        for x, y, z, block in updates:
+            block_states[x, y, z] = block
+
+
+def _majority_block(blocks: list[str]) -> str:
+    counts: dict[str, int] = {}
+    winner = blocks[0]
+    best = 0
+    for block in blocks:
+        counts[block] = counts.get(block, 0) + 1
+        if counts[block] > best:
+            best = counts[block]
+            winner = block
+    return winner

@@ -53,6 +53,11 @@ class BuildConfig:
     far_distance_pivot: float = 0.6
     far_distance_boost: float = 0.9
     far_distance_power: float = 1.4
+    fill_column_gaps: bool = True
+    max_column_gap: int = 3
+    fill_enclosed_holes: bool = True
+    enclosed_hole_iterations: int = 1
+    enclosed_hole_min_neighbors: int = 4
 
 
 @dataclass(slots=True)

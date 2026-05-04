@@ -39,7 +39,12 @@
     "forward_distance_scale": 1.5,
     "far_distance_pivot": 0.6,
     "far_distance_boost": 0.9,
-    "far_distance_power": 1.4
+    "far_distance_power": 1.4,
+    "fill_column_gaps": true,
+    "max_column_gap": 3,
+    "fill_enclosed_holes": true,
+    "enclosed_hole_iterations": 1,
+    "enclosed_hole_min_neighbors": 4
   },
   "classification": {
     "water_depth_threshold": 0.52,

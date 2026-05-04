@@ -19,6 +19,8 @@ from .voxelize import (
     ScaleFit,
     compute_forward_distance_map,
     compute_scale_fit,
+    fill_column_gaps,
+    fill_enclosed_holes,
     paint_line,
     paint_triangle,
     paint_voxel,
@@ -205,6 +207,8 @@ class ImageToSchematicPipeline:
                     ny = y_image + dy
                     if nx >= width_2d or ny >= height_2d or not valid_mask[ny, nx]:
                         continue
+                    if str(label_grid[ny, nx]) != str(label_grid[y_image, x]):
+                        continue
                     neighbor = tuple(int(v) for v in voxel_grid[ny, nx].tolist())
                     gap = max(abs(neighbor[i] - coord[i]) for i in range(3))
                     if gap > self.config.build.max_connection_gap:
@@ -228,6 +232,14 @@ class ImageToSchematicPipeline:
                         and valid_mask[y_image + 1, x]
                         and valid_mask[y_image + 1, x + 1]
                     ):
+                        continue
+                    labels = {
+                        str(label_grid[y_image, x]),
+                        str(label_grid[y_image, x + 1]),
+                        str(label_grid[y_image + 1, x]),
+                        str(label_grid[y_image + 1, x + 1]),
+                    }
+                    if len(labels) != 1:
                         continue
                     p00 = tuple(int(v) for v in voxel_grid[y_image, x].tolist())
                     p10 = tuple(int(v) for v in voxel_grid[y_image, x + 1].tolist())
@@ -266,6 +278,20 @@ class ImageToSchematicPipeline:
                         block,
                         radius=self.config.build.point_radius,
                     )
+
+        if self.config.build.fill_column_gaps:
+            fill_column_gaps(
+                block_states,
+                background_block=self.config.build.background_block,
+                max_gap=self.config.build.max_column_gap,
+            )
+        if self.config.build.fill_enclosed_holes:
+            fill_enclosed_holes(
+                block_states,
+                background_block=self.config.build.background_block,
+                iterations=self.config.build.enclosed_hole_iterations,
+                min_neighbors=self.config.build.enclosed_hole_min_neighbors,
+            )
 
         volume = SchematicVolume(
             width=target_size[0],

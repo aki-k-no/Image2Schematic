@@ -62,25 +62,51 @@ class RegionClassifier:
         r, g, b = [channel / 255.0 for channel in mean_rgb]
         hue, sat, val = colorsys.rgb_to_hsv(r, g, b)
         hue_deg = hue * 360.0
+        brightness = (r + g + b) / 3.0
+        blue_dominance = b - max(r, g)
+        green_dominance = g - max(r, b)
+        red_dominance = r - max(g, b)
 
         if (
             centroid_y <= self.config.sky_top_portion
             and val > self.config.sky_brightness_threshold
             and (b >= r or sat < 0.22)
         ):
+            if sat < 0.12 and val > 0.82:
+                return "cloud"
             return "sky"
         if (
             b > max(r, g)
             and centroid_y >= self.config.water_bottom_portion
             and sat > 0.2
         ):
-            return "water"
+            if val < 0.42 or mean_depth > self.config.water_depth_threshold:
+                return "water_deep"
+            return "water_shallow"
         if self.config.vegetation_hue_min <= hue_deg <= self.config.vegetation_hue_max and g >= r:
+            if val < 0.34:
+                return "foliage_dark"
+            if val > 0.58 or green_dominance > 0.12:
+                return "foliage_light"
             return "foliage"
         if val > 0.85 and sat < 0.18:
             return "snow"
         if r > 0.55 and g > 0.5 and b < 0.45:
             return "sand"
+        if r > 0.42 and g > 0.34 and b < 0.28 and sat < 0.32 and centroid_y > 0.45:
+            return "path"
+        if abs(r - g) < 0.08 and abs(g - b) < 0.08:
+            if val < 0.34:
+                return "rock_dark"
+            if mean_depth > 0.62 or centroid_y < 0.55:
+                return "cliff"
+            return "rock"
+        if centroid_y > 0.58 and green_dominance > 0.06:
+            if brightness > 0.48:
+                return "ground_grass"
+            return "ground"
+        if centroid_y > 0.52 and red_dominance > 0.04 and brightness < 0.52:
+            return "ground_dirt"
         if abs(r - g) < 0.08 and abs(g - b) < 0.08:
             return "rock"
         if r > g and r > b and sat > 0.35:
@@ -89,4 +115,6 @@ class RegionClassifier:
             return "shadow"
         if centroid_y <= self.config.sky_top_portion * 0.9 and b > g and b > r:
             return "sky"
+        if centroid_y > 0.55:
+            return "ground_grass" if green_dominance > 0.04 else "ground_dirt"
         return "ground"

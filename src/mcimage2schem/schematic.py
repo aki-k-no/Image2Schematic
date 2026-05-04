@@ -26,6 +26,7 @@ LEGACY_BLOCK_MAP: dict[str, LegacyBlock] = {
     "minecraft:water": LegacyBlock(9, 0),
     "minecraft:sand": LegacyBlock(12, 0),
     "minecraft:gravel": LegacyBlock(13, 0),
+    "minecraft:log:0": LegacyBlock(17, 0),
     "minecraft:log:1": LegacyBlock(17, 1),
     "minecraft:leaves:0": LegacyBlock(18, 0),
     "minecraft:leaves:1": LegacyBlock(18, 1),

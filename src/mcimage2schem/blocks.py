@@ -16,10 +16,24 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:stained_glass:3", (117, 204, 255), 5),
         BlockCandidate("minecraft:stained_glass:0", (240, 240, 255), 3),
     ],
+    "cloud": [
+        BlockCandidate("minecraft:wool:0", (236, 236, 236), 7),
+        BlockCandidate("minecraft:stained_glass:0", (240, 240, 255), 3),
+    ],
     "water": [
         BlockCandidate("minecraft:water", (63, 118, 228), 7),
         BlockCandidate("minecraft:stained_glass:11", (60, 68, 170), 3),
         BlockCandidate("minecraft:stained_glass:3", (97, 125, 142), 2),
+    ],
+    "water_deep": [
+        BlockCandidate("minecraft:water", (40, 88, 170), 8),
+        BlockCandidate("minecraft:stained_glass:11", (60, 68, 170), 5),
+        BlockCandidate("minecraft:stained_glass:3", (97, 125, 142), 2),
+    ],
+    "water_shallow": [
+        BlockCandidate("minecraft:water", (92, 145, 210), 7),
+        BlockCandidate("minecraft:stained_glass:3", (97, 125, 142), 5),
+        BlockCandidate("minecraft:stained_glass:0", (190, 220, 230), 2),
     ],
     "foliage": [
         BlockCandidate("minecraft:leaves:0", (73, 112, 55), 11),
@@ -28,6 +42,19 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:leaves2:1", (89, 140, 61), 10),
         BlockCandidate("minecraft:wool:13", (86, 99, 50), 4),
         BlockCandidate("minecraft:grass", (95, 159, 53), 2),
+        BlockCandidate("minecraft:log:1", (81, 65, 44), 2),
+    ],
+    "foliage_dark": [
+        BlockCandidate("minecraft:leaves:3", (58, 90, 52), 10),
+        BlockCandidate("minecraft:leaves:1", (84, 118, 63), 8),
+        BlockCandidate("minecraft:log:1", (81, 65, 44), 4),
+        BlockCandidate("minecraft:wool:13", (86, 99, 50), 3),
+    ],
+    "foliage_light": [
+        BlockCandidate("minecraft:leaves2:1", (89, 140, 61), 10),
+        BlockCandidate("minecraft:leaves:0", (73, 112, 55), 7),
+        BlockCandidate("minecraft:grass", (95, 159, 53), 4),
+        BlockCandidate("minecraft:log:0", (102, 81, 51), 2),
     ],
     "snow": [
         BlockCandidate("minecraft:snow_block", (249, 254, 254), 8),
@@ -45,8 +72,20 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:stonebrick", (136, 136, 136), 6),
         BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
     ],
+    "rock_dark": [
+        BlockCandidate("minecraft:cobblestone", (100, 100, 100), 8),
+        BlockCandidate("minecraft:stone", (110, 110, 110), 6),
+        BlockCandidate("minecraft:obsidian", (76, 76, 79), 2),
+    ],
+    "cliff": [
+        BlockCandidate("minecraft:stone", (125, 125, 125), 7),
+        BlockCandidate("minecraft:stonebrick", (136, 136, 136), 5),
+        BlockCandidate("minecraft:cobblestone", (117, 117, 117), 5),
+        BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
+    ],
     "wood": [
         BlockCandidate("minecraft:oak_planks", (162, 130, 79), 5),
+        BlockCandidate("minecraft:log:0", (102, 81, 51), 5),
         BlockCandidate("minecraft:log:1", (115, 85, 49), 4),
         BlockCandidate("minecraft:spruce_planks", (114, 84, 54), 4),
     ],
@@ -59,6 +98,21 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:grass", (109, 153, 48), 6),
         BlockCandidate("minecraft:stained_hardened_clay:12", (119, 70, 51), 4),
         BlockCandidate("minecraft:gravel", (134, 134, 134), 2),
+    ],
+    "ground_grass": [
+        BlockCandidate("minecraft:grass", (109, 153, 48), 9),
+        BlockCandidate("minecraft:dirt", (134, 96, 67), 5),
+        BlockCandidate("minecraft:leaves:0", (73, 112, 55), 2),
+    ],
+    "ground_dirt": [
+        BlockCandidate("minecraft:dirt", (134, 96, 67), 9),
+        BlockCandidate("minecraft:stained_hardened_clay:12", (119, 70, 51), 6),
+        BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
+    ],
+    "path": [
+        BlockCandidate("minecraft:gravel", (134, 134, 134), 7),
+        BlockCandidate("minecraft:dirt", (134, 96, 67), 6),
+        BlockCandidate("minecraft:stained_hardened_clay:12", (119, 70, 51), 4),
     ],
 }
 
@@ -147,11 +201,21 @@ class BlockSelector:
     def _tolerance_for_label(label: str) -> int:
         return {
             "foliage": 3400,
+            "foliage_dark": 2800,
+            "foliage_light": 2800,
             "ground": 2600,
+            "ground_grass": 2200,
+            "ground_dirt": 2200,
+            "path": 2000,
             "rock": 2200,
+            "rock_dark": 1800,
+            "cliff": 1800,
             "sand": 1800,
             "snow": 1600,
             "water": 1400,
+            "water_deep": 1200,
+            "water_shallow": 1200,
+            "cloud": 1200,
             "wood": 1800,
             "shadow": 1200,
         }.get(label, 1600)
@@ -160,11 +224,21 @@ class BlockSelector:
     def _max_candidates_for_label(label: str) -> int:
         return {
             "foliage": 4,
+            "foliage_dark": 4,
+            "foliage_light": 4,
             "ground": 3,
+            "ground_grass": 3,
+            "ground_dirt": 3,
+            "path": 3,
             "rock": 3,
+            "rock_dark": 3,
+            "cliff": 4,
             "sand": 3,
             "snow": 3,
             "water": 2,
+            "water_deep": 2,
+            "water_shallow": 3,
+            "cloud": 2,
             "wood": 3,
             "shadow": 2,
         }.get(label, 2)
