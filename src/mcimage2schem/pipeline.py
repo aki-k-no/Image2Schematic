@@ -91,7 +91,7 @@ class ImageToSchematicPipeline:
                     continue
                 valid_mask[y_image, x] = True
                 label_grid[y_image, x] = label
-                rgb_grid[y_image, x] = np.asarray(avg_rgb, dtype=np.uint8)
+                rgb_grid[y_image, x] = rgb[y_image, x]
 
         forward_distance_map, forward_distance_fit = compute_forward_distance_map(
             principal_point_x=camera.principal_point_x,

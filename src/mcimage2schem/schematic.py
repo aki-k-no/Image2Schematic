@@ -23,6 +23,7 @@ LEGACY_BLOCK_MAP: dict[str, LegacyBlock] = {
     "minecraft:planks:0": LegacyBlock(5, 0),
     "minecraft:oak_planks": LegacyBlock(5, 0),
     "minecraft:spruce_planks": LegacyBlock(5, 1),
+    "minecraft:birch_planks": LegacyBlock(5, 2),
     "minecraft:water": LegacyBlock(9, 0),
     "minecraft:sand": LegacyBlock(12, 0),
     "minecraft:gravel": LegacyBlock(13, 0),
@@ -35,7 +36,10 @@ LEGACY_BLOCK_MAP: dict[str, LegacyBlock] = {
     "minecraft:glass": LegacyBlock(20, 0),
     "minecraft:sandstone": LegacyBlock(24, 0),
     "minecraft:wool:0": LegacyBlock(35, 0),
+    "minecraft:wool:3": LegacyBlock(35, 3),
+    "minecraft:wool:5": LegacyBlock(35, 5),
     "minecraft:wool:7": LegacyBlock(35, 7),
+    "minecraft:wool:11": LegacyBlock(35, 11),
     "minecraft:wool:13": LegacyBlock(35, 13),
     "minecraft:obsidian": LegacyBlock(49, 0),
     "minecraft:snow_block": LegacyBlock(80, 0),
@@ -46,7 +50,11 @@ LEGACY_BLOCK_MAP: dict[str, LegacyBlock] = {
     "minecraft:stonebrick": LegacyBlock(98, 0),
     "minecraft:leaves2:1": LegacyBlock(161, 1),
     "minecraft:stained_hardened_clay:0": LegacyBlock(159, 0),
+    "minecraft:stained_hardened_clay:4": LegacyBlock(159, 4),
+    "minecraft:stained_hardened_clay:5": LegacyBlock(159, 5),
+    "minecraft:stained_hardened_clay:8": LegacyBlock(159, 8),
     "minecraft:stained_hardened_clay:12": LegacyBlock(159, 12),
+    "minecraft:stained_hardened_clay:13": LegacyBlock(159, 13),
 }
 
 
