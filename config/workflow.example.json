@@ -1,7 +1,7 @@
 {
   "image": {
-    "target_width": 128,
-    "target_height": 72
+    "target_width": 256,
+    "target_height": 144
   },
   "depth": {
     "model_id": "depth-anything/Depth-Anything-V2-Small-hf",

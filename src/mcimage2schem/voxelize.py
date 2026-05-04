@@ -62,10 +62,9 @@ def compute_forward_distance_map(
 
     xs = np.arange(relative_depth.shape[1], dtype=np.float32)
     unit_x = (xs - float(principal_point_x)) / float(max(focal_length_px_x, 1e-6))
-    front_x_values = unit_x[np.where(front_mask)[1]]
-    span_unit_x = float(max(front_x_values.max() - front_x_values.min(), 1e-6))
+    image_span_unit_x = float(max(unit_x.max() - unit_x.min(), 1e-6))
     target_front_width = float(max((target_width - 1) * near_width_fill_ratio, 1.0))
-    near_distance = target_front_width / span_unit_x
+    near_distance = target_front_width / image_span_unit_x
     far_distance = near_distance + float(max(target_length - 1, 1))
     distance_scale = max(float(forward_distance_scale), 1e-6)
     near_distance *= distance_scale
@@ -83,7 +82,7 @@ def compute_forward_distance_map(
         near_distance=float(near_distance),
         far_distance=float(far_distance),
         front_depth_threshold=threshold,
-        front_span_unit_x=span_unit_x,
+        front_span_unit_x=image_span_unit_x,
         target_front_width=target_front_width,
         front_mask=front_mask,
     )

@@ -70,7 +70,6 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:stone", (125, 125, 125), 9),
         BlockCandidate("minecraft:cobblestone", (117, 117, 117), 5),
         BlockCandidate("minecraft:stonebrick", (136, 136, 136), 6),
-        BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
     ],
     "rock_dark": [
         BlockCandidate("minecraft:cobblestone", (100, 100, 100), 8),
@@ -81,7 +80,6 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:stone", (125, 125, 125), 7),
         BlockCandidate("minecraft:stonebrick", (136, 136, 136), 5),
         BlockCandidate("minecraft:cobblestone", (117, 117, 117), 5),
-        BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
     ],
     "wood": [
         BlockCandidate("minecraft:oak_planks", (162, 130, 79), 5),
@@ -97,7 +95,6 @@ PALETTE: dict[str, list[BlockCandidate]] = {
         BlockCandidate("minecraft:dirt", (134, 96, 67), 7),
         BlockCandidate("minecraft:grass", (109, 153, 48), 6),
         BlockCandidate("minecraft:stained_hardened_clay:12", (119, 70, 51), 4),
-        BlockCandidate("minecraft:gravel", (134, 134, 134), 2),
     ],
     "ground_grass": [
         BlockCandidate("minecraft:grass", (109, 153, 48), 9),
@@ -107,7 +104,7 @@ PALETTE: dict[str, list[BlockCandidate]] = {
     "ground_dirt": [
         BlockCandidate("minecraft:dirt", (134, 96, 67), 9),
         BlockCandidate("minecraft:stained_hardened_clay:12", (119, 70, 51), 6),
-        BlockCandidate("minecraft:gravel", (134, 134, 134), 3),
+        BlockCandidate("minecraft:stone", (125, 125, 125), 2),
     ],
     "path": [
         BlockCandidate("minecraft:gravel", (134, 134, 134), 7),
